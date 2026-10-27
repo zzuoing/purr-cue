@@ -1,0 +1,23 @@
+# Build output
+dist/
+bin/
+obj/
+*.pdb
+
+# Local reminder data and backups
+reminders*.json
+*.broken-*
+
+# Compiled exploratory renderers
+concepts/*.exe
+concepts/*-frames*/
+concepts/*.png
+concepts/*.gif
+
+# Editor and OS files
+.vs/
+.vscode/
+*.user
+*.suo
+Thumbs.db
+Desktop.ini
