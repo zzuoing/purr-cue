@@ -41,6 +41,16 @@ app.whenReady().then(async () => {
   const overlays = () => BrowserWindow.getAllWindows().filter(w => w.webContents.getURL().includes('/overlay.html?'));
   const { locales } = require('../src/localization.cjs');
   const version = require('../package.json').version;
+  const execCli = require('node:util').promisify(require('node:child_process').execFile);
+  const cli = async (...args) => JSON.parse((await execCli(process.execPath, [path.join(root, 'bin/purrcue.cjs'), ...args, '--data-dir', profile, '--no-launch', '--json'], { env: { ...process.env, ELECTRON_RUN_AS_NODE: '1' }, windowsHide: true })).stdout);
+  assert.equal((await cli('status')).value.name, 'PurrCue');
+  const cliAdded = await cli('add', '--in', '1h', '--message', 'CLI 喝水・물');
+  assert.equal(cliAdded.ok, true);
+  assert.equal((await cli('list')).value[0].Id, cliAdded.value.Id);
+  await until(() => run('document.getElementById("reminders").textContent.includes("CLI 喝水・물")'), 'CLI reminder did not reach the real UI');
+  assert.equal((await cli('remove', cliAdded.value.Id)).ok, true);
+  await until(() => run('document.getElementById("reminders").options.length === 0'), 'CLI removal did not reach the real UI');
+  checks.push('External CLI authenticates, adds/lists/removes through real app IPC, and updates the UI without direct data-file writes');
   await run('document.getElementById("message").value="Keep this draft"');
   for (const locale of ['en', 'ja', 'ko', 'zh']) {
     await run(`document.getElementById('language').value='${locale}';document.getElementById('language').dispatchEvent(new Event('change'))`);
@@ -111,7 +121,7 @@ app.whenReady().then(async () => {
   clickOverlay(latestQuick);
   await until(() => latestQuick.isDestroyed(), 'Quick animation did not close');
   await sleep(100); assert.equal(overlays().length, 0);
-  assert.equal(fs.existsSync(path.join(profile, 'reminders-v2.json')), false);
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(profile, 'reminders-v2.json'), 'utf8')), []);
   assert.equal((await run('window.desktopReminder.playQuick("invalid")')).ok, false);
   checks.push('All eight quick states fill text and immediately replace the current animation; rapid clicks keep only the latest without creating reminders');
   await run('document.getElementById("repeat").click(); document.querySelectorAll(".days button")[0].click()');

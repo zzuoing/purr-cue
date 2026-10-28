@@ -15,8 +15,8 @@ if [[ ! -x "${node_archive%.tar.xz}/bin/node" ]]; then tar -xJf "$node_archive";
 export PATH="$runtime_root/${node_archive%.tar.xz}/bin:$PATH"
 reuse_dependencies=false
 if [[ -d "$build_root/node_modules/flatpickr" ]] && cmp -s "$project_root/package-lock.json" "$build_root/package-lock.json"; then reuse_dependencies=true; fi
-for directory in src scripts test assets; do mkdir -p "$build_root/$directory"; rsync -a "$project_root/$directory/" "$build_root/$directory/"; done
-cp "$project_root/package.json" "$project_root/package-lock.json" "$build_root/"
+for directory in src scripts test assets bin; do mkdir -p "$build_root/$directory"; rsync -a "$project_root/$directory/" "$build_root/$directory/"; done
+cp "$project_root/package.json" "$project_root/package-lock.json" "$project_root/LICENSE" "$project_root/THIRD_PARTY_NOTICES.md" "$build_root/"
 cd "$build_root"
 node --version
 if [[ "$reuse_dependencies" == true ]]; then npm run postinstall; else npm ci --registry=https://registry.npmjs.org; fi
@@ -25,6 +25,7 @@ npm test
 xvfb-run -a node_modules/.bin/electron --no-sandbox --disable-gpu scripts/smoke.cjs
 npm run dist:linux -- --x64 --publish never
 app_version="$(node -p 'require("./package.json").version')"
-APPIMAGE_EXTRACT_AND_RUN=1 PACKAGED_EXE="$build_root/release/DesktopReminder-$app_version-linux-x86_64.AppImage" xvfb-run -a node scripts/verify-package.cjs
+APPIMAGE_EXTRACT_AND_RUN=1 PACKAGED_EXE="$build_root/release/PurrCue-$app_version-linux-x86_64.AppImage" xvfb-run -a node scripts/verify-package.cjs
+APPIMAGE_EXTRACT_AND_RUN=1 PACKAGED_EXE="$build_root/release/PurrCue-$app_version-linux-x86_64.AppImage" xvfb-run -a node scripts/verify-cli-package.cjs
 mkdir -p "$project_root/release"
-cp "release/DesktopReminder-$app_version-linux-x86_64.AppImage" "release/DesktopReminder-$app_version-linux-amd64.deb" "$project_root/release/"
+cp "release/PurrCue-$app_version-linux-x86_64.AppImage" "release/PurrCue-$app_version-linux-amd64.deb" "$project_root/release/"

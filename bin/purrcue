@@ -1,0 +1,9 @@
+#!/bin/sh
+task_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+if [ -x "$task_dir/purrcue-desktop" ]; then
+  ELECTRON_RUN_AS_NODE=1 exec "$task_dir/purrcue-desktop" "$task_dir/resources/cli/purrcue.cjs" "$@"
+elif [ -x "$task_dir/MacOS/PurrCue" ]; then
+  ELECTRON_RUN_AS_NODE=1 exec "$task_dir/MacOS/PurrCue" "$task_dir/Resources/cli/purrcue.cjs" "$@"
+else
+  exec node "$task_dir/purrcue.cjs" "$@"
+fi

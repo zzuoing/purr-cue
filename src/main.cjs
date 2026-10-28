@@ -4,6 +4,7 @@ const { pathToFileURL } = require('node:url');
 const { ReminderStore, dueAt, createReminder, localDate } = require('./reminders.cjs');
 const { selectScene, lastFrame, interval } = require('./animation/scenes-config.cjs');
 const { locales, quickIds, translate, errorKeys, LanguageSettings } = require('./localization.cjs');
+const { startCliServer } = require('./cli-server.cjs');
 const appVersion = require('../package.json').version;
 
 const args = process.argv.slice(1);
@@ -12,8 +13,9 @@ const isPreview = previewIndex !== -1;
 const smoke = args.includes('--smoke-test');
 const profile = args.find(v => v.startsWith('--data-dir='));
 if (profile) app.setPath('userData', path.resolve(profile.slice(11)));
-app.setName('桌面提醒');
-let mainWindow, animationWindow, tray, store, timer, language, quitting = false;
+else app.setPath('userData', path.join(app.getPath('appData'), '桌面提醒'));
+app.setName('PurrCue');
+let mainWindow, animationWindow, tray, store, timer, language, cliServer, quitting = false;
 const t = (key, variables) => translate(language?.locale || 'zh', key, variables);
 const icon = path.join(__dirname, '../assets/cat-head.png');
 const preload = path.join(__dirname, 'preload.cjs');
@@ -36,6 +38,22 @@ function state() {
   return { reminders: store.items, autoStart: getAutoStart(), autoStartSupported: process.platform !== 'linux', warning, locale: language.locale, strings: locales[language.locale], version: appVersion };
 }
 function notify() { if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('state-changed', state()); }
+function cliCommand(command, input) {
+  if (command === 'status') return { name: 'PurrCue', version: appVersion, locale: language.locale, count: store.items.length, pid: process.pid };
+  if (command === 'list') return store.items;
+  if (command === 'add') {
+    let item;
+    try { item = createReminder(input); }
+    catch (error) { throw new Error(errorKeys[error.message] ? translate('en', errorKeys[error.message]) : error.message); }
+    store.transaction(items => items.push(item)); notify(); return item;
+  }
+  if (command === 'remove') {
+    if (typeof input?.id !== 'string' || !store.items.some(item => item.Id === input.id)) throw Error('Reminder not found');
+    store.transaction(items => { items.splice(items.findIndex(item => item.Id === input.id), 1); });
+    notify(); return { id: input.id, removed: true };
+  }
+  throw Error('Unknown CLI command');
+}
 function getAutoStart() {
   if (process.platform === 'linux') return false;
   return app.getLoginItemSettings({ path: process.execPath, args: app.isPackaged ? [] : [app.getAppPath()] }).openAtLogin;
@@ -136,7 +154,7 @@ function registerIpc() {
 }
 if (!isPreview && !smoke && !app.requestSingleInstanceLock()) app.quit();
 else {
-  app.on('second-instance', () => { if (store) showMain(); });
+  app.on('second-instance', (_, argv = []) => { if (store && !argv.includes('--background')) showMain(); });
   app.whenReady().then(async () => {
     language = new LanguageSettings(app.getPath('userData'), app.getLocale());
     if (!isPreview) language.load();
@@ -145,14 +163,15 @@ else {
     if (isPreview) { showAnimation(args[previewIndex + 1] || '透气', new Date(), null, true); return; }
     const legacy = process.platform === 'win32' && process.env.LOCALAPPDATA ? path.join(process.env.LOCALAPPDATA, 'DesktopReminder/reminders-v2.json') : null;
     store = new ReminderStore(app.getPath('userData'), profile ? null : legacy); store.load();
+    cliServer = await startCliServer(app.getPath('userData'), cliCommand);
     tray = new Tray(process.platform === 'darwin' ? nativeImage.createFromPath(icon).resize({ width: 20, height: 20 }) : icon);
     updateNativeLanguage();
     tray.on('double-click', showMain); tray.on('click', showMain);
-    showMain();
+    if (!args.includes('--background')) showMain();
     timer = setInterval(checkDue, 15000); powerMonitor.on('resume', checkDue);
     checkDue();
   }).catch(error => { showError(error); app.exit(1); });
 }
 app.on('activate', () => { if (store) showMain(); });
 app.on('window-all-closed', () => {});
-app.on('before-quit', () => { quitting = true; clearInterval(timer); tray?.destroy(); });
+app.on('before-quit', () => { quitting = true; clearInterval(timer); cliServer?.close(); tray?.destroy(); });

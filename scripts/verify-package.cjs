@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const assert = require('node:assert/strict');
 const root = path.join(__dirname, '..');
-const exe = process.env.PACKAGED_EXE || path.join(root, 'release/win-unpacked/桌面提醒.exe');
+const exe = process.env.PACKAGED_EXE || path.join(root, 'release/win-unpacked/PurrCue.exe');
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 async function connect(url) {
   const ws = new WebSocket(url); let id = 0; const requests = new Map();
@@ -20,7 +20,7 @@ async function verify(preview, port) {
   child.on('exit', () => { exited = true; });
   try {
     let targets;
-    for (let i = 0; i < 200; i++) {
+    for (let i = 0; i < 2400; i++) {
       if (exited) throw new Error('Packaged app exited before verification');
       try { targets = await (await fetch(`http://127.0.0.1:${port}/json`)).json(); if (targets.some(t => t.type === 'page' && t.url.includes(preview ? 'overlay.html' : 'index.html'))) break; } catch {}
       await sleep(50);
@@ -57,7 +57,7 @@ async function verify(preview, port) {
       assert.equal(result.ok, true); assert.deepEqual(result.value.reminders, []);
       assert.equal(result.value.version, require('../package.json').version);
       assert.match(await evaluate('document.getElementById("version").textContent'), new RegExp(result.value.version.replaceAll('.', '\\.')));
-      assert.equal(await evaluate('document.title'), '桌面提醒');
+      assert.equal(await evaluate('document.title'), 'PurrCue');
       assert.equal(await evaluate('!!document.getElementById("calendar-input")._flatpickr'), true, 'Packaged date component did not load');
       await evaluate('document.getElementById("open-picker").click()');
       assert.equal(await evaluate('document.getElementById("date-time-picker").open'), true);

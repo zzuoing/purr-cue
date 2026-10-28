@@ -1,14 +1,15 @@
 {
-  "name": "desktop-reminder",
-  "version": "2.0.0",
-  "description": "桌面提醒：带小猫动画的跨平台提醒工具",
+  "name": "purrcue",
+  "version": "2.0.2",
+  "description": "PurrCue — a little cat for timely reminders",
   "author": "zzuoing",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "engines": {
     "node": ">=24"
   },
-  "main": "src/main.cjs",
+  "main": "src/entry.cjs",
   "desktopName": "desktop-reminder.desktop",
   "homepage": "https://github.com/zzuoing/desktop-reminder",
   "scripts": {
@@ -30,7 +31,8 @@
     "dist": "electron-builder",
     "dist:win": "electron-builder --win",
     "dist:mac": "electron-builder --mac",
-    "dist:linux": "electron-builder --linux"
+    "dist:linux": "electron-builder --linux",
+    "cli": "node bin/purrcue.cjs"
   },
   "devDependencies": {
     "electron": "45.0.0",
@@ -39,26 +41,43 @@
   },
   "build": {
     "appId": "com.zzuoing.desktop-reminder",
-    "productName": "桌面提醒",
+    "productName": "PurrCue",
     "directories": {
       "output": "release"
     },
     "files": [
       "src/**/*",
       "assets/**/*",
+      "LICENSE",
+      "THIRD_PARTY_NOTICES.md",
       "package.json"
     ],
     "asar": true,
-    "artifactName": "DesktopReminder-${version}-${os}-${arch}.${ext}",
+    "artifactName": "PurrCue-${version}-${os}-${arch}.${ext}",
     "win": {
       "target": [
         "nsis"
       ],
-      "icon": "assets/cat-head.ico"
+      "icon": "assets/cat-head.ico",
+      "executableName": "PurrCue",
+      "extraFiles": [
+        {
+          "from": "bin/purrcue.cmd",
+          "to": "purrcue.cmd"
+        }
+      ]
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "multiLanguageInstaller": true,
+      "installerLanguages": [
+        "en_US",
+        "zh_CN",
+        "ja_JP",
+        "ko_KR"
+      ],
+      "displayLanguageSelector": true
     },
     "mac": {
       "target": [
@@ -66,17 +85,48 @@
         "zip"
       ],
       "category": "public.app-category.productivity",
-      "icon": "assets/app-icon.png"
+      "extendInfo": {
+        "CFBundleDevelopmentRegion": "en",
+        "CFBundleLocalizations": [
+          "en",
+          "zh-Hans",
+          "ja",
+          "ko"
+        ]
+      },
+      "icon": "assets/app-icon.png",
+      "extraFiles": [
+        {
+          "from": "bin/purrcue",
+          "to": "purrcue"
+        }
+      ]
     },
     "linux": {
       "target": [
-        "AppImage", "deb"
+        "AppImage",
+        "deb"
       ],
-      "executableName": "desktop-reminder",
+      "executableName": "purrcue-desktop",
       "syncDesktopName": true,
       "maintainer": "zzuoing <zzuoing@users.noreply.github.com>",
       "category": "Utility",
-      "icon": "assets/app-icon.png"
-    }
+      "icon": "assets/app-icon.png",
+      "extraFiles": [
+        {
+          "from": "bin/purrcue",
+          "to": "purrcue"
+        }
+      ]
+    },
+    "extraResources": [
+      {
+        "from": "bin/purrcue.cjs",
+        "to": "cli/purrcue.cjs"
+      }
+    ]
+  },
+  "bin": {
+    "purrcue": "bin/purrcue.cjs"
   }
 }

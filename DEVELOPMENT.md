@@ -104,7 +104,7 @@ python scripts/compare-traces.py
 
 原始帧和指令由旧 C# 函数独立计算，非 JS 反生成。输出位于 work，不进入发布包。对照绘制顺序、颜色、路径控制点、裁剪和变换；坐标容差为 0.02 逻辑像素，透明度字节必须一致。
 
-本次 Windows 验证：11 项基础测试、真实界面检查通过，包含四语言切换/记忆、标题、日历、错误提示、版本显示、草稿保留、日期面板和提醒流程；动画迁移阶段的 5,870 帧 Canvas 渲染无脚本错误，272 组关键帧的 157,586 个数值对照通过，最大差异约 0.000158。图像仍存在渲染器边缘抗锯齿差异。
+本次 Windows 验证：13 项基础测试、真实界面检查通过，包含四语言切换/记忆、标题、日历、错误提示、版本显示、草稿保留、日期面板和提醒流程；动画迁移阶段的 5,870 帧 Canvas 渲染无脚本错误，272 组关键帧的 157,586 个数值对照通过，最大差异约 0.000158。图像仍存在渲染器边缘抗锯齿差异。
 
 port-animation.py 是一次性历史迁移工具，会覆盖 scenes.js，日常不应随意执行。新动画直接维护 JS；旧 C# 冻结为参考，不双份开发。
 
@@ -120,7 +120,7 @@ npm run dist:mac -- --universal --publish never
 
 Windows 目录包在 release/win-unpacked，NSIS、Linux AppImage/deb 均位于 release，文件名包含版本、平台、架构。macOS universal 包含 Intel/Apple Silicon。签名、公证凭据未配置，也没有自动更新功能。推送版本标签会在全部构建成功后公开发布 GitHub Release；PR 和手动构建仅上传 Actions 产物。
 
-GitHub Actions 在 PR、v* 版本标签、手动触发时构建 Windows/macOS/Linux 并上传产物。标签通过 RELEASE_TAG 环境变量传入验证脚本，不插入 shell 命令；无效语义版本会终止构建。手动触发可选 tag，PR 使用当前文件版本。Linux runner 额外执行 Xvfb 的真实界面检查，并从最终 AppImage 检查产品版本与 UI。配置尚未推送，不能把本地验证视为 GitHub Actions 或 macOS 已通过。
+GitHub Actions 在 PR、v* 版本标签、手动触发时构建 Windows/macOS/Linux 并上传产物。标签通过 RELEASE_TAG 环境变量传入验证脚本，不插入 shell 命令；无效语义版本会终止构建。手动触发可选 tag，PR 使用当前文件版本。Linux runner 额外执行 Xvfb 的真实界面检查，并从最终 AppImage 检查产品版本与 UI。v2.0.1 已通过 GitHub Actions 三平台构建并发布 Release；macOS 打包成功不代表完成实机行为验收。
 
 Release 作业依赖整个构建矩阵成功，使用 GitHub CLI 下载当前运行的安装包后发布，只有该作业授予 contents: write 和 actions: read。标签包含预发布后缀时标记为 Prerelease；重跑会覆盖同名附件。首次发布需先提交并推送代码和工作流，再推送版本标签；仅本地创建或修改文件不会触发远端 Actions。
 
@@ -129,3 +129,13 @@ Ubuntu WSL 下 scripts/build-linux-wsl.sh 可实际构建 AppImage/deb，使用 
 正式分发前需真实 Windows/Mac 验收：安装和首次启动、单实例、九种动画透明边缘与完整动作、Retina/缩放、Dock/任务栏、工作区和全屏、睡眠唤醒和补弹、开机启动勾选取消、签名公证及干净机器安装。
 
 Linux AppImage/deb 已在 Ubuntu WSL 实际构建，11 项测试与四语言/提醒/动画界面检查通过；最终 AppImage 的启动、产品版本、日期面板和 GIF 自然结束也已通过检查。Xvfb 测试采用软件渲染，测试进程使用 --no-sandbox（发布程序不默认附加这些测试参数）。Wayland 绝对定位、置顶和不同桌面的托盘仍需目标桌面实机验收。
+
+## PurrCue 品牌、开源与 CLI
+
+正式名称为 PurrCue；保留 com.zzuoing.desktop-reminder 与原用户数据目录，避免升级丢失提醒。默认 README 为英文，另有 zh-CN/ja/ko 版本。项目采用 MIT，第三方声明随应用分发。Windows NSIS 明确启用 en_US/zh_CN/ja_JP/ko_KR，英语放第一位作为不支持语言的默认值，显示语言选择框；安装语言与应用设置独立。macOS 声明四种本地化及英文开发语言。
+
+CLI 源码为 bin/purrcue.cjs（无第三方依赖），本地可 node 调用或 npm link。安装包通过 extraResources 携带客户端，extraFiles 携带包装脚本，使用 Electron 的 Node 模式，无需单独安装 Node。AppImage 通过 --cli 子命令进入 src/entry.cjs 的客户端分支，绕过单实例锁和 GUI 初始化。服务端 src/cli-server.cjs 使用命名管道/Unix socket，仅接受 status/list/add/remove；随机令牌保存在用户数据 cli-connection.json，POSIX 权限 0600，无网络监听。添加/删除由主进程通过现有 ReminderStore 事务完成并通知 UI，不允许客户端直接改提醒文件。
+
+CLI 会先只读探测状态，必要时后台启动应用；不重试结果未知的写操作，避免重复创建提醒。--data-dir 用于隔离测试。单元测试覆盖日期/星期校验、认证与共享存储；真实 Electron smoke 通过外部 CLI 进程验证增删和 UI 同步。Windows 与 Linux 最终包已验证独立运行时、自动启动、版本号、中日韩文本、一次/重复提醒及增删；macOS CLI 仍需实机验收。
+
+Linux 主程序文件名为 purrcue-desktop，CLI 脚本为 purrcue，避免在 Windows/WSL 大小写不敏感磁盘上互相覆盖。AppImage extract-and-run 的外层运行时会向标准输出列出解压路径，可能与客户端 JSON 交错；验证器识别单条 CLI 协议响应，需要纯 JSON 的调用方应使用解包后的 CLI。macOS/Windows 的包内脚本没有这层解压输出。

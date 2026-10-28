@@ -1,11 +1,13 @@
 # Build output
 dist/
 bin/
+!/bin/
 obj/
 *.pdb
 
 # Local reminder data and backups
 reminders*.json
+cli-connection.json*
 *.broken-*
 
 # Compiled exploratory renderers

@@ -31,6 +31,7 @@ function render(state) {
   document.querySelector('.list-side').setAttribute('aria-label', t('list'));
   document.querySelector('.modes').setAttribute('aria-label', t('settings'));
   $('language').value = state.locale; $('version').textContent = t('version', { version: state.version });
+  document.querySelector('.language-label').title = t('language');
   if (changedLanguage) picker.setLocale();
   if (changedLanguage) for (const id of ['message', 'when']) $(id).setCustomValidity('');
   const selected = $('reminders').value;

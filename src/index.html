@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>桌面提醒</title>
+  <title>PurrCue</title>
   <link rel="stylesheet" href="vendor/flatpickr.min.css">
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -26,7 +26,7 @@
       </form>
       <label class="auto-start"><input id="auto-start" type="checkbox"><span data-i18n="autoStart">开机自动启动</span></label>
       <span class="background-hint">关闭窗口后仍在托盘运行</span>
-      <footer class="app-info"><label for="language" data-i18n="language">语言</label><select id="language" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="ja">日本語</option><option value="ko">한국어</option></select><span id="version"></span></footer>
+      <footer class="app-info"><label for="language" class="language-label"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6m-7 0 6-6 2-3M2 5h12M7 2v3m7 17 5-11 5 11m-8-4h6"/></svg><span class="visually-hidden" data-i18n="language">Language</span></label><select id="language" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="ja">日本語</option><option value="ko">한국어</option></select><span id="version"></span></footer>
     </section>
     <section class="list-side" aria-label="已设置的提醒">
       <h2>已设置的提醒</h2>

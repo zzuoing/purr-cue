@@ -8,5 +8,5 @@ function walk(dir) {
     else if (/\.(cjs|js)$/.test(file)) execFileSync(process.execPath, ['--check', file], { stdio: 'inherit' });
   }
 }
-walk('src'); walk('scripts'); walk('test');
+walk('src'); walk('scripts'); walk('test'); walk('bin');
 console.log('JavaScript syntax checks passed');

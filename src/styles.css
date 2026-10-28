@@ -58,6 +58,8 @@ dialog::backdrop { background: #0003; }
 #picker-cancel { margin-left: auto; }
 .app-info { position: absolute; left: 20px; right: 20px; top: 392px; height: 27px; border-top: 1px solid #e1d8cf; padding-top: 5px; display: flex; align-items: center; gap: 8px; color: #706860; }
 .app-info select { background: white; border: 1px solid #dbcab8; height: 23px; }
+.language-label { display: flex; align-items: center; cursor: pointer; color: #975624; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 #version { margin-left: auto; }
 #quick button { padding: 1px; line-height: 12px; }
 html[lang=en] #quick button, html[lang=ja] #quick button, html[lang=ko] #quick button { font-size: 10px; }
