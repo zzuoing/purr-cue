@@ -8,6 +8,12 @@ const profile = path.join(root, 'work', 'smoke-profile-' + Date.now());
 process.argv.push('--smoke-test', '--data-dir=' + profile);
 require('../src/main.cjs');
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+function clickOverlay(window) {
+  // A DOM script that closes its own window can lose its IPC reply on fast runners.
+  // Send real mouse input so dismissal doesn't depend on that reply arriving.
+  window.webContents.sendInputEvent({ type: 'mouseDown', x: 10, y: 10, button: 'left', clickCount: 1 });
+  window.webContents.sendInputEvent({ type: 'mouseUp', x: 10, y: 10, button: 'left', clickCount: 1 });
+}
 async function capture(window) {
   let failure;
   for (let attempt = 0; attempt < 4; attempt++) {
@@ -56,7 +62,7 @@ app.whenReady().then(async () => {
     const localized = overlays()[0];
     assert.equal(new URL(localized.webContents.getURL()).searchParams.get('scene'), 'Water');
     assert.equal(new URL(localized.webContents.getURL()).searchParams.get('message'), locales[locale].quick.Water);
-    await localized.webContents.executeJavaScript('document.dispatchEvent(new MouseEvent("click"))');
+    clickOverlay(localized);
     await until(() => localized.isDestroyed(), 'Localized quick animation did not close');
     await run('document.getElementById("message").value="Keep this draft"');
   }
@@ -102,7 +108,7 @@ app.whenReady().then(async () => {
   await run('document.querySelectorAll("#quick button")[0].click();document.querySelectorAll("#quick button")[4].click();document.querySelectorAll("#quick button")[2].click()');
   await until(() => overlays().length === 1 && overlays()[0].isVisible() && overlays()[0].webContents.getURL().includes('scene=Water'), 'Rapid clicks did not keep only the latest animation');
   const latestQuick = overlays()[0];
-  await latestQuick.webContents.executeJavaScript('document.dispatchEvent(new MouseEvent("click"))');
+  clickOverlay(latestQuick);
   await until(() => latestQuick.isDestroyed(), 'Quick animation did not close');
   await sleep(100); assert.equal(overlays().length, 0);
   assert.equal(fs.existsSync(path.join(profile, 'reminders-v2.json')), false);
@@ -155,7 +161,7 @@ app.whenReady().then(async () => {
   powerMonitor.emit('resume');
   await until(() => overlays().length === 1 && overlays()[0].isVisible(), 'Second animation missing');
   overlay = overlays()[0]; assert.ok(overlay.webContents.getURL().includes('scene=Water'));
-  await overlay.webContents.executeJavaScript('document.dispatchEvent(new MouseEvent("click"))');
+  clickOverlay(overlay);
   await until(() => overlay.isDestroyed(), 'Click did not dismiss animation');
   assert.equal((await run('window.desktopReminder.state()')).value.reminders.length, 0);
   checks.push('Next due item and click dismissal');
