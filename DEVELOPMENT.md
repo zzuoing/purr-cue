@@ -110,6 +110,8 @@ port-animation.py 是一次性历史迁移工具，会覆盖 scenes.js，日常�
 
 ## 打包与分发
 
+Mac 首次启动提示放在四语 README 的下载表后，以及 GitHub Release 正文顶部。docs/release-install-notes.md 是后续发布的四语提示模板，Release 作业检出后将它置于自动生成的更新日志前；重跑时通过 HTML 标记避免重复插入，同时保留原有发布说明。以后启用签名和公证后，需要同步更新此模板及四语 README。
+
 GitHub 仓库为 https://github.com/zzuoing/purr-cue，产品显示名为 PurrCue。CI 的构建产物前缀为 purr-cue，安装包文件名前缀仍为 PurrCue。macOS 使用 macos-15-intel 标准 runner 构建 universal 包，以避开此前 ARM runner 容量不足导致的排队取消；产物仍同时包含 Intel 和 Apple Silicon。
 
 ```sh

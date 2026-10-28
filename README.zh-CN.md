@@ -32,7 +32,9 @@
 | macOS Intel / Apple Silicon | universal `.dmg` / `.zip` | 打开 DMG 拖入“应用程序”，或解压 ZIP。 |
 | Linux x64 | `.AppImage` / `.deb` | 给 AppImage 添加执行权限后运行，或用包管理器安装 deb。 |
 
-当前安装包未签名，未配置 macOS 公证。macOS 行为仍需实机验证；Linux 不同桌面环境、Wayland 合成器的窗口定位、置顶与托盘支持可能不同。应用内暂不支持 Linux 开机自启。
+> **Mac 首次打开：** PurrCue 当前未签名、未经过 Apple 公证。若被系统拦截，先点 **“完成”**，再到 **系统设置 → 隐私与安全性**，在 PurrCue 提示旁点 **“仍要打开”** 并确认。安装使用不需要付费开发者账号。[Apple 官方说明](https://support.apple.com/zh-cn/102445)。
+
+当前安装包未签名。macOS 行为仍需实机验证；Linux 不同桌面环境、Wayland 合成器的窗口定位、置顶与托盘支持可能不同。应用内暂不支持 Linux 开机自启。
 
 ## 使用
 

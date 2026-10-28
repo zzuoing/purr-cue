@@ -32,7 +32,9 @@ Get packages from the [latest release](https://github.com/zzuoing/purr-cue/relea
 | macOS Intel / Apple Silicon | universal `.dmg` / `.zip` | Open the DMG and drag the app to Applications, or extract the ZIP. |
 | Linux x64 | `.AppImage` / `.deb` | Make the AppImage executable and run it, or install the deb with your package manager. |
 
-Packages are unsigned; macOS notarization is not configured. macOS behavior still needs real-hardware testing. Linux placement, always-on-top behavior, and tray support can vary by desktop environment and Wayland compositor. Linux login startup is not currently available in the app.
+> **Mac first launch:** PurrCue is currently unsigned and not notarized by Apple. If macOS blocks it, click **Done**, then go to **System Settings → Privacy & Security → Open Anyway** beside the PurrCue notice and confirm. You do not need a paid developer account to install. [Apple's instructions](https://support.apple.com/en-us/102445).
+
+Packages are unsigned. macOS behavior still needs real-hardware testing. Linux placement, always-on-top behavior, and tray support can vary by desktop environment and Wayland compositor. Linux login startup is not currently available in the app.
 
 ## Use
 

@@ -86,6 +86,7 @@ jobs:
       actions: read
       contents: write
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Publish installers to GitHub Release
         shell: bash
         env:
@@ -102,10 +103,15 @@ jobs:
           fi
           if gh release view "$RELEASE_TAG" > /dev/null 2>&1; then
             gh release upload "$RELEASE_TAG" "${packages[@]}" --clobber
+            gh release view "$RELEASE_TAG" --json body --jq .body > existing-notes.md
+            if ! grep -q '<!-- purrcue-macos-first-launch -->' existing-notes.md; then
+              cat docs/release-install-notes.md existing-notes.md > release-notes.md
+              gh release edit "$RELEASE_TAG" --notes-file release-notes.md
+            fi
           else
             flags=()
             if [[ "$RELEASE_TAG" == *-* ]]; then
               flags+=(--prerelease)
             fi
-            gh release create "$RELEASE_TAG" "${packages[@]}" --verify-tag --generate-notes "${flags[@]}"
+            gh release create "$RELEASE_TAG" "${packages[@]}" --verify-tag --generate-notes --notes-file docs/release-install-notes.md "${flags[@]}"
           fi
