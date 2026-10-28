@@ -110,6 +110,8 @@ port-animation.py 是一次性历史迁移工具，会覆盖 scenes.js，日常�
 
 ## 打包与分发
 
+GitHub 仓库为 https://github.com/zzuoing/purr-cue，产品显示名为 PurrCue。CI 的构建产物前缀为 purr-cue，安装包文件名前缀仍为 PurrCue。macOS 使用 macos-15-intel 标准 runner 构建 universal 包，以避开此前 ARM runner 容量不足导致的排队取消；产物仍同时包含 Intel 和 Apple Silicon。
+
 ```sh
 npm run pack
 npm run dist:win -- --publish never

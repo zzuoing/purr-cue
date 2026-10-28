@@ -1,6 +1,6 @@
 {
   "name": "purrcue",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "PurrCue — a little cat for timely reminders",
   "author": "zzuoing",
   "license": "MIT",
@@ -11,7 +11,14 @@
   },
   "main": "src/entry.cjs",
   "desktopName": "desktop-reminder.desktop",
-  "homepage": "https://github.com/zzuoing/desktop-reminder",
+  "homepage": "https://github.com/zzuoing/purr-cue",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zzuoing/purr-cue.git"
+  },
+  "bugs": {
+    "url": "https://github.com/zzuoing/purr-cue/issues"
+  },
   "scripts": {
     "postinstall": "node scripts/prepare-vendor.cjs",
     "prestart": "node scripts/prepare-vendor.cjs",

@@ -8,7 +8,7 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md) | [日本語](README.ja.md) | **한국어**
 
-[다운로드](https://github.com/zzuoing/desktop-reminder/releases/latest) · [JoyCows](https://joycows.com/) · [문제 제보](https://github.com/zzuoing/desktop-reminder/issues)
+[다운로드](https://github.com/zzuoing/purr-cue/releases/latest) · [JoyCows](https://joycows.com/) · [문제 제보](https://github.com/zzuoing/purr-cue/issues)
 
 <img src="assets/stretch.gif" width="360" alt="기지개를 켜는 고양이 애니메이션">
 
@@ -24,7 +24,7 @@
 
 ## 다운로드 및 설치
 
-[최신 릴리스](https://github.com/zzuoing/desktop-reminder/releases/latest)에서 설치 파일을 받으세요.
+[최신 릴리스](https://github.com/zzuoing/purr-cue/releases/latest)에서 설치 파일을 받으세요.
 
 | 플랫폼 | 패키지 | 설치 방법 |
 | --- | --- | --- |

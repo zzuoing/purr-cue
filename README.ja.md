@@ -8,7 +8,7 @@
 
 [English](README.md) | [简体中文](README.zh-CN.md) | **日本語** | [한국어](README.ko.md)
 
-[ダウンロード](https://github.com/zzuoing/desktop-reminder/releases/latest) · [JoyCows](https://joycows.com/) · [不具合を報告](https://github.com/zzuoing/desktop-reminder/issues)
+[ダウンロード](https://github.com/zzuoing/purr-cue/releases/latest) · [JoyCows](https://joycows.com/) · [不具合を報告](https://github.com/zzuoing/purr-cue/issues)
 
 <img src="assets/stretch.gif" width="360" alt="猫が伸びをするアニメーション">
 
@@ -24,7 +24,7 @@
 
 ## ダウンロードとインストール
 
-[最新リリース](https://github.com/zzuoing/desktop-reminder/releases/latest) からダウンロードしてください。
+[最新リリース](https://github.com/zzuoing/purr-cue/releases/latest) からダウンロードしてください。
 
 | プラットフォーム | パッケージ | インストール方法 |
 | --- | --- | --- |

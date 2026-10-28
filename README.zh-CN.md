@@ -8,7 +8,7 @@
 
 [English](README.md) | **简体中文** | [日本語](README.ja.md) | [한국어](README.ko.md)
 
-[下载安装](https://github.com/zzuoing/desktop-reminder/releases/latest) · [JoyCows](https://joycows.com/) · [反馈问题](https://github.com/zzuoing/desktop-reminder/issues)
+[下载安装](https://github.com/zzuoing/purr-cue/releases/latest) · [JoyCows](https://joycows.com/) · [反馈问题](https://github.com/zzuoing/purr-cue/issues)
 
 <img src="assets/stretch.gif" width="360" alt="小猫伸懒腰动画">
 
@@ -24,7 +24,7 @@
 
 ## 下载与安装
 
-从 [最新版本](https://github.com/zzuoing/desktop-reminder/releases/latest) 下载安装包。
+从 [最新版本](https://github.com/zzuoing/purr-cue/releases/latest) 下载安装包。
 
 | 平台 | 安装包 | 安装方法 |
 | --- | --- | --- |

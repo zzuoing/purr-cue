@@ -8,7 +8,7 @@ A little cat to remind you to drink water, stretch, and take a break.
 
 **English** | [简体中文](README.zh-CN.md) | [日本語](README.ja.md) | [한국어](README.ko.md)
 
-[Download](https://github.com/zzuoing/desktop-reminder/releases/latest) · [JoyCows](https://joycows.com/) · [Report an issue](https://github.com/zzuoing/desktop-reminder/issues)
+[Download](https://github.com/zzuoing/purr-cue/releases/latest) · [JoyCows](https://joycows.com/) · [Report an issue](https://github.com/zzuoing/purr-cue/issues)
 
 <img src="assets/stretch.gif" width="360" alt="The cat stretching">
 
@@ -24,7 +24,7 @@ A little cat to remind you to drink water, stretch, and take a break.
 
 ## Download and install
 
-Get packages from the [latest release](https://github.com/zzuoing/desktop-reminder/releases/latest).
+Get packages from the [latest release](https://github.com/zzuoing/purr-cue/releases/latest).
 
 | Platform | Package | Installation |
 | --- | --- | --- |
