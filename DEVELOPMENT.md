@@ -136,6 +136,8 @@ Linux AppImage/deb 已在 Ubuntu WSL 实际构建，11 项测试与四语言/提
 
 ## PurrCue 品牌、开源与 CLI
 
+正式图标使用 design/purrcue-icon-approved.png 中已确认的“耳朵前置、无嘴巴、保留鼻子”版本。npm run icons 仅进行尺寸和格式转换，生成应用/托盘/四语 README 使用的 cat-head.png、macOS/Linux 使用的 app-icon.png，以及 Windows 使用的多尺寸 cat-head.ico。concepts 中原始头像绘制器为历史设计，不再用于生成正式图标；动画 GIF 与绘制逻辑独立保留。
+
 正式名称为 PurrCue；保留 com.zzuoing.desktop-reminder 与原用户数据目录，避免升级丢失提醒。默认 README 为英文，另有 zh-CN/ja/ko 版本。项目采用 MIT，第三方声明随应用分发。Windows NSIS 明确启用 en_US/zh_CN/ja_JP/ko_KR，英语放第一位作为不支持语言的默认值，显示语言选择框；安装语言与应用设置独立。macOS 声明四种本地化及英文开发语言。
 
 CLI 源码为 bin/purrcue.cjs（无第三方依赖），本地可 node 调用或 npm link。安装包通过 extraResources 携带客户端，extraFiles 携带包装脚本，使用 Electron 的 Node 模式，无需单独安装 Node。AppImage 通过 --cli 子命令进入 src/entry.cjs 的客户端分支，绕过单实例锁和 GUI 初始化。服务端 src/cli-server.cjs 使用命名管道/Unix socket，仅接受 status/list/add/remove；随机令牌保存在用户数据 cli-connection.json，POSIX 权限 0600，无网络监听。添加/删除由主进程通过现有 ReminderStore 事务完成并通知 UI，不允许客户端直接改提醒文件。

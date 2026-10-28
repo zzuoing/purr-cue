@@ -1,6 +1,6 @@
 {
   "name": "purrcue",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "PurrCue — a little cat for timely reminders",
   "author": "zzuoing",
   "license": "MIT",
@@ -20,6 +20,7 @@
     "url": "https://github.com/zzuoing/purr-cue/issues"
   },
   "scripts": {
+    "icons": "electron scripts/prepare-icons.cjs",
     "postinstall": "node scripts/prepare-vendor.cjs",
     "prestart": "node scripts/prepare-vendor.cjs",
     "prepack": "node scripts/prepare-vendor.cjs",
