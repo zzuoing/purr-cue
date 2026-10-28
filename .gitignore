@@ -21,3 +21,10 @@ concepts/*.gif
 *.suo
 Thumbs.db
 Desktop.ini
+
+# Electron dependencies, packages and local verification artifacts
+node_modules/
+release/
+work/
+test-results/
+src/vendor/

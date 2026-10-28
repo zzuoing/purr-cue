@@ -1,0 +1,187 @@
+// Run with Electron, using an isolated profile. Exercises the real preload/IPC/UI.
+const { app, BrowserWindow, powerMonitor } = require('electron');
+const fs = require('node:fs');
+const path = require('node:path');
+const assert = require('node:assert/strict');
+const root = path.join(__dirname, '..');
+const profile = path.join(root, 'work', 'smoke-profile-' + Date.now());
+process.argv.push('--smoke-test', '--data-dir=' + profile);
+require('../src/main.cjs');
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+async function capture(window) {
+  let failure;
+  for (let attempt = 0; attempt < 4; attempt++) {
+    try { return (await window.webContents.capturePage(undefined, { stayAwake: true, stayHidden: true })).toPNG(); }
+    catch (error) { failure = error; await sleep(250); }
+  }
+  throw new Error(`Screenshot failed for ${window.webContents.getURL()}`, { cause: failure });
+}
+async function until(predicate, message, timeout = 10000) {
+  const end = Date.now() + timeout;
+  while (Date.now() < end) { if (await predicate()) return; await sleep(50); }
+  throw new Error(message);
+}
+const checks = [], errors = [];
+app.on('web-contents-created', (_, contents) => {
+  contents.on('console-message', details => { if (details.level === 'error') errors.push(details.message); });
+});
+app.whenReady().then(async () => {
+  await until(() => BrowserWindow.getAllWindows().some(w => w.webContents.getURL().endsWith('/index.html')), 'Main window missing');
+  let main = BrowserWindow.getAllWindows().find(w => w.webContents.getURL().endsWith('/index.html'));
+  await until(async () => main.webContents.executeJavaScript('!!document.getElementById("quick")?.children.length'), 'UI not loaded');
+  const run = script => main.webContents.executeJavaScript(script);
+  await run('window.desktopReminder.language("zh")');
+  await until(() => run('document.documentElement.lang === "zh"'), 'Test language not ready');
+  const overlays = () => BrowserWindow.getAllWindows().filter(w => w.webContents.getURL().includes('/overlay.html?'));
+  const { locales } = require('../src/localization.cjs');
+  const version = require('../package.json').version;
+  await run('document.getElementById("message").value="Keep this draft"');
+  for (const locale of ['en', 'ja', 'ko', 'zh']) {
+    await run(`document.getElementById('language').value='${locale}';document.getElementById('language').dispatchEvent(new Event('change'))`);
+    await until(() => run(`document.documentElement.lang === '${locale}'`), 'Language switch failed');
+    assert.equal(await run('document.querySelector(".save").textContent'), locales[locale].save);
+    assert.equal(await run('[...document.querySelectorAll("#quick button")].every(b=>b.scrollWidth<=b.clientWidth)'), true, 'Quick labels overflow');
+    assert.equal(await run('document.getElementById("message").value'), 'Keep this draft');
+    assert.match(await run('document.getElementById("version").textContent'), new RegExp(version.replaceAll('.', '\\.')));
+    assert.equal(main.getTitle(), locales[locale].appName);
+    assert.equal(JSON.parse(fs.readFileSync(path.join(profile, 'settings.json'))).locale, locale);
+    const invalid = await run('window.desktopReminder.add({mode:"once",when:new Date(Date.now()-1000).toISOString(),message:"test",days:[]})');
+    assert.equal(invalid.ok, false); assert.equal(invalid.error, locales[locale].errors.future);
+    assert.equal(await run(`document.getElementById('calendar-input')._flatpickr.l10n.weekdays.shorthand[0] === window.flatpickr.l10ns['${locale === 'en' ? 'default' : locale}'].weekdays.shorthand[0]`), true);
+    await sleep(200);
+    fs.writeFileSync(path.join(root, 'work', `i18n-${locale}.png`), await capture(main));
+    await run('document.querySelectorAll("#quick button")[2].click()');
+    assert.equal(await run('document.getElementById("message").value'), locales[locale].quick.Water);
+    await until(() => overlays().length === 1 && overlays()[0].isVisible(), 'Localized quick animation missing');
+    const localized = overlays()[0];
+    assert.equal(new URL(localized.webContents.getURL()).searchParams.get('scene'), 'Water');
+    assert.equal(new URL(localized.webContents.getURL()).searchParams.get('message'), locales[locale].quick.Water);
+    await localized.webContents.executeJavaScript('document.dispatchEvent(new MouseEvent("click"))');
+    await until(() => localized.isDestroyed(), 'Localized quick animation did not close');
+    await run('document.getElementById("message").value="Keep this draft"');
+  }
+  assert.equal((await run('window.desktopReminder.state()')).value.reminders.length, 0);
+  assert.equal((await run('window.desktopReminder.language("invalid")')).ok, false);
+  checks.push('Four-language UI, native title, calendar, quick animation messages, persisted settings and runtime version pass; draft text is preserved');
+  const originalWhen = await run('document.getElementById("when").value');
+  await run('document.getElementById("open-picker").click()');
+  assert.equal(await run('document.getElementById("date-time-picker").open'), true);
+  assert.equal(await run('document.querySelectorAll("#picker-hour option").length'), 24);
+  assert.equal(await run('document.querySelectorAll("#picker-minute option").length'), 60);
+  assert.equal(await run('(()=>{const r=document.getElementById("date-time-picker").getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight})()'), true);
+  await sleep(250);
+  fs.writeFileSync(path.join(root, 'work', 'date-picker.png'), await capture(main));
+  await run('document.getElementById("picker-tomorrow").click();document.getElementById("picker-hour").value="13";document.getElementById("picker-minute").value="27";document.getElementById("picker-confirm").click()');
+  const selectedWhen = await run('document.getElementById("when").value');
+  assert.match(selectedWhen, /13:27$/); assert.notEqual(selectedWhen, originalWhen);
+  await run('document.getElementById("repeat").click();document.getElementById("open-picker").click()');
+  assert.equal(await run('document.getElementById("calendar-host").hidden'), true);
+  assert.equal(await run('document.getElementById("picker-hour").value'), '16');
+  await run('document.getElementById("picker-hour").value="17";document.getElementById("picker-cancel").click()');
+  assert.equal(await run('document.getElementById("when").value'), '16:00');
+  await run('document.getElementById("open-picker").click();document.getElementById("picker-hour").value="17";document.getElementById("picker-minute").value="45"');
+  await sleep(250);
+  fs.writeFileSync(path.join(root, 'work', 'time-picker.png'), await capture(main));
+  await run('document.getElementById("picker-confirm").click();document.getElementById("once").click()');
+  assert.equal(await run('document.getElementById("when").value'), selectedWhen);
+  checks.push('Date/time panel fits window; 24-hour dropdowns, tomorrow shortcut, cancel and independent once/repeat values work');
+  assert.equal(await run('document.querySelectorAll("#quick button").length'), 8);
+  const quickScenes = ['WorkStart','Window','Water','Eating','Stretch','Walking','Toilet','PackUp'];
+  const quickLabels = ['上班','透气','喝水','吃饭','拉伸','散步','如厕','下班'];
+  let previousQuick;
+  for (let i = 0; i < quickScenes.length; i++) {
+    await run(`document.querySelectorAll('#quick button')[${i}].click()`);
+    assert.equal(await run('document.getElementById("message").value'), quickLabels[i]);
+    await until(() => overlays().length === 1 && overlays()[0].isVisible(), 'Quick animation missing');
+    const quick = overlays()[0];
+    if (previousQuick) assert.equal(previousQuick.isDestroyed(), true);
+    assert.ok(quick.webContents.getURL().includes('scene=' + quickScenes[i]));
+    assert.equal((await run('window.desktopReminder.state()')).value.reminders.length, 0);
+    previousQuick = quick;
+  }
+  await run('document.querySelectorAll("#quick button")[0].click();document.querySelectorAll("#quick button")[4].click();document.querySelectorAll("#quick button")[2].click()');
+  await until(() => overlays().length === 1 && overlays()[0].isVisible() && overlays()[0].webContents.getURL().includes('scene=Water'), 'Rapid clicks did not keep only the latest animation');
+  const latestQuick = overlays()[0];
+  await latestQuick.webContents.executeJavaScript('document.dispatchEvent(new MouseEvent("click"))');
+  await until(() => latestQuick.isDestroyed(), 'Quick animation did not close');
+  await sleep(100); assert.equal(overlays().length, 0);
+  assert.equal(fs.existsSync(path.join(profile, 'reminders-v2.json')), false);
+  assert.equal((await run('window.desktopReminder.playQuick("invalid")')).ok, false);
+  checks.push('All eight quick states fill text and immediately replace the current animation; rapid clicks keep only the latest without creating reminders');
+  await run('document.getElementById("repeat").click(); document.querySelectorAll(".days button")[0].click()');
+  assert.equal(await run('document.getElementById("when").dataset.mode'), 'repeat');
+  assert.equal(await run('document.querySelectorAll(".days .selected").length'), 1);
+  checks.push('Repeat mode and weekday selection');
+  await run('document.getElementById("once").click()');
+  await run('document.getElementById("editor").requestSubmit()');
+  await until(async () => (await run('window.desktopReminder.state()')).value.reminders.length === 1, 'Selected date was not saved');
+  const panelItem = (await run('window.desktopReminder.state()')).value.reminders[0];
+  assert.equal(new Date(panelItem.When).getHours(), 13); assert.equal(new Date(panelItem.When).getMinutes(), 27);
+  await run(`document.getElementById('reminders').value=${JSON.stringify(panelItem.Id)};document.getElementById('delete').click()`);
+  await until(async () => (await run('window.desktopReminder.state()')).value.reminders.length === 0, 'Panel reminder did not delete');
+  checks.push('Panel-selected local date/time saves through the real form with correct hours/minutes');
+  const add = input => run(`window.desktopReminder.add(${JSON.stringify(input)})`);
+  const future = new Date(Date.now() + 3600000).toISOString();
+  let result = await add({ mode: 'once', when: future, message: '持久化验证', days: [] });
+  assert.equal(result.ok, true); const storedId = result.value.reminders[0].Id;
+  assert.equal(JSON.parse(fs.readFileSync(path.join(profile, 'reminders-v2.json'))).length, 1);
+  await run(`window.desktopReminder.remove(${JSON.stringify(storedId)})`);
+  checks.push('Real IPC add/delete and atomic persistence');
+  result = await add({ mode: 'repeat', when: future, message: '工作日验证', days: [1,2,3,4,5] });
+  assert.equal(result.ok, true);
+  assert.match(await run('document.getElementById("reminders").textContent'), /工作日/);
+  await run(`window.desktopReminder.remove(${JSON.stringify(result.value.reminders[0].Id)})`);
+  checks.push('Workday label');
+  // Two due items exercise serialization, click/Esc dismissal and final deletion.
+  const due = new Date(Date.now() + 200).toISOString();
+  for (const message of ['上班', '喝水']) assert.equal((await add({ mode: 'once', when: due, message, days: [] })).ok, true);
+  await sleep(250); powerMonitor.emit('resume');
+  await until(() => overlays().length === 1 && overlays()[0].isVisible(), 'Animation not shown');
+  let overlay = overlays()[0];
+  assert.ok(overlay.webContents.getURL().includes('scene=WorkStart'));
+  await until(() => overlay.webContents.executeJavaScript('document.getElementById("scene").width > 0'), 'Animation canvas missing');
+  fs.writeFileSync(path.join(root, 'work', 'electron-main.png'), await capture(main));
+  fs.writeFileSync(path.join(root, 'work', 'electron-overlay.png'), await capture(overlay));
+  powerMonitor.emit('resume'); assert.equal(overlays().length, 1);
+  await run('document.querySelectorAll("#quick button")[7].click()');
+  await until(() => overlay.isDestroyed(), 'Quick click did not interrupt scheduled animation');
+  assert.equal((await run('window.desktopReminder.state()')).value.reminders.length, 1);
+  await until(() => overlays().length === 1 && overlays()[0].isVisible(), 'Replacement quick animation missing');
+  overlay = overlays()[0]; assert.ok(overlay.webContents.getURL().includes('scene=PackUp'));
+  assert.equal((await run('window.desktopReminder.state()')).value.reminders.length, 1);
+  overlay.webContents.sendInputEvent({ type: 'keyDown', keyCode: 'Escape' });
+  await until(() => overlay.isDestroyed(), 'Esc did not dismiss replacement animation');
+  checks.push('Quick playback interrupts scheduled animation, performs normal completion cleanup and leaves other reminders intact');
+  powerMonitor.emit('resume');
+  await until(() => overlays().length === 1 && overlays()[0].isVisible(), 'Second animation missing');
+  overlay = overlays()[0]; assert.ok(overlay.webContents.getURL().includes('scene=Water'));
+  await overlay.webContents.executeJavaScript('document.dispatchEvent(new MouseEvent("click"))');
+  await until(() => overlay.isDestroyed(), 'Click did not dismiss animation');
+  assert.equal((await run('window.desktopReminder.state()')).value.reminders.length, 0);
+  checks.push('Next due item and click dismissal');
+  const stretchDue = new Date(Date.now() + 100).toISOString();
+  assert.equal((await add({ mode: 'once', when: stretchDue, message: '拉伸', days: [] })).ok, true);
+  await sleep(150); powerMonitor.emit('resume');
+  await until(() => overlays().length === 1 && overlays()[0].isVisible(), 'Stretch animation missing');
+  overlay = overlays()[0];
+  const gif = await overlay.webContents.executeJavaScript('({visible:!document.getElementById("stretch").hidden,width:document.getElementById("stretch").naturalWidth,height:document.getElementById("stretch").naturalHeight})');
+  assert.deepEqual(gif, { visible: true, width: 480, height: 280 });
+  const firstGifFrame = await capture(overlay); await sleep(800);
+  const secondGifFrame = await capture(overlay);
+  assert.equal(firstGifFrame.equals(secondGifFrame), false, 'GIF did not animate');
+  await until(() => overlay.isDestroyed(), 'Stretch did not end naturally', 16000);
+  assert.equal((await run('window.desktopReminder.state()')).value.reminders.length, 0);
+  checks.push('Original stretch GIF advances, ends naturally and removes its reminder');
+  main.close(); await until(() => main.isDestroyed(), 'Main UI was not released');
+  assert.equal(BrowserWindow.getAllWindows().length, 0);
+  app.emit('second-instance');
+  await until(() => BrowserWindow.getAllWindows().length === 1, 'Tray reopen path failed');
+  main = BrowserWindow.getAllWindows()[0];
+  await until(() => main.webContents.getURL().endsWith('/index.html') && !main.webContents.isLoading(), 'Reopened UI not ready');
+  await until(() => main.webContents.executeJavaScript('document.documentElement.lang === "zh" && !!document.getElementById("version").textContent'), 'Language or version was lost on reopen');
+  checks.push('Close releases UI; tray process can reopen the window');
+  assert.deepEqual(errors, []);
+  fs.writeFileSync(path.join(root, 'work', 'smoke-result.json'), JSON.stringify({ checks, errors }, null, 2));
+  console.log(JSON.stringify({ checks, errors }));
+  app.quit();
+}).catch(error => { console.error(error); app.exit(1); });

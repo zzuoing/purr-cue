@@ -1,0 +1,103 @@
+name: Build desktop apps
+on:
+  pull_request:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Optional version tag, for example v1.0.1'
+        required: false
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: desktop-build-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-22.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: 24
+          cache: npm
+      - name: Set version from tag
+        id: version
+        run: node scripts/set-version.cjs
+        env:
+          RELEASE_TAG: ${{ github.ref_type == 'tag' && github.ref_name || inputs.tag }}
+      - run: npm ci
+      - run: npm run check
+      - run: npm test
+      - name: Linux build and test dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb libgtk-3-0 libnss3 libasound2 libgbm1 libarchive-tools fonts-noto-cjk
+      - name: Verify Linux UI and reminder behavior
+        if: runner.os == 'Linux'
+        run: xvfb-run -a node_modules/.bin/electron --no-sandbox --disable-gpu scripts/smoke.cjs
+      - name: Package Windows
+        if: runner.os == 'Windows'
+        run: npm run dist:win -- --publish never
+      - name: Package macOS Intel and Apple Silicon
+        if: runner.os == 'macOS'
+        run: npm run dist:mac -- --universal --publish never
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - name: Package Linux AppImage and deb
+        if: runner.os == 'Linux'
+        run: npm run dist:linux -- --x64 --publish never
+      - name: Verify Linux packaged version and UI
+        if: runner.os == 'Linux'
+        run: APPIMAGE_EXTRACT_AND_RUN=1 PACKAGED_EXE="$PWD/release/DesktopReminder-$FILE_VERSION-linux-x86_64.AppImage" xvfb-run -a node scripts/verify-package.cjs
+        env:
+          FILE_VERSION: ${{ steps.version.outputs.version }}
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: desktop-reminder-${{ steps.version.outputs.version }}-${{ runner.os }}
+          path: |
+            release/*.exe
+            release/*.dmg
+            release/*.zip
+            release/*.AppImage
+            release/*.deb
+          if-no-files-found: error
+          compression-level: 0
+  release:
+    if: startsWith(github.ref, 'refs/tags/v') && github.event_name == 'push'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+    steps:
+      - name: Publish installers to GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          gh run download "$GITHUB_RUN_ID" --pattern 'desktop-reminder-*' --dir artifacts
+          mapfile -d '' packages < <(find artifacts -type f \( -name '*.exe' -o -name '*.dmg' -o -name '*.zip' -o -name '*.AppImage' -o -name '*.deb' \) -print0)
+          if [ "${#packages[@]}" -eq 0 ]; then
+            echo 'No installers were downloaded' >&2
+            exit 1
+          fi
+          if gh release view "$RELEASE_TAG" > /dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" "${packages[@]}" --clobber
+          else
+            flags=()
+            if [[ "$RELEASE_TAG" == *-* ]]; then
+              flags+=(--prerelease)
+            fi
+            gh release create "$RELEASE_TAG" "${packages[@]}" --verify-tag --generate-notes "${flags[@]}"
+          fi

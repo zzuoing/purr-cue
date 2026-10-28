@@ -1,0 +1,82 @@
+{
+  "name": "desktop-reminder",
+  "version": "2.0.0",
+  "description": "桌面提醒：带小猫动画的跨平台提醒工具",
+  "author": "zzuoing",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "main": "src/main.cjs",
+  "desktopName": "desktop-reminder.desktop",
+  "homepage": "https://github.com/zzuoing/desktop-reminder",
+  "scripts": {
+    "postinstall": "node scripts/prepare-vendor.cjs",
+    "prestart": "node scripts/prepare-vendor.cjs",
+    "prepack": "node scripts/prepare-vendor.cjs",
+    "predist:win": "node scripts/prepare-vendor.cjs",
+    "predist:mac": "node scripts/prepare-vendor.cjs",
+    "predist:linux": "node scripts/prepare-vendor.cjs",
+    "predist": "node scripts/prepare-vendor.cjs",
+    "start": "electron .",
+    "preview": "electron . --preview",
+    "test": "node --test test/*.test.cjs",
+    "check": "node scripts/check.cjs",
+    "version:tag": "node scripts/set-version.cjs",
+    "verify:animation": "electron scripts/verify-animation.cjs",
+    "verify:app": "electron scripts/smoke.cjs",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win",
+    "dist:mac": "electron-builder --mac",
+    "dist:linux": "electron-builder --linux"
+  },
+  "devDependencies": {
+    "electron": "45.0.0",
+    "electron-builder": "26.18.0",
+    "flatpickr": "4.6.13"
+  },
+  "build": {
+    "appId": "com.zzuoing.desktop-reminder",
+    "productName": "桌面提醒",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "asar": true,
+    "artifactName": "DesktopReminder-${version}-${os}-${arch}.${ext}",
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "assets/cat-head.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.productivity",
+      "icon": "assets/app-icon.png"
+    },
+    "linux": {
+      "target": [
+        "AppImage", "deb"
+      ],
+      "executableName": "desktop-reminder",
+      "syncDesktopName": true,
+      "maintainer": "zzuoing <zzuoing@users.noreply.github.com>",
+      "category": "Utility",
+      "icon": "assets/app-icon.png"
+    }
+  }
+}

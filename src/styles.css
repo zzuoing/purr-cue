@@ -1,0 +1,66 @@
+:root { font-family: "Microsoft YaHei UI", "PingFang SC", sans-serif; color: #413a34; background: #f9f7f3; font-size: 12px; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+main { position: relative; width: 736px; height: 430px; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; background: white; border: 1px solid #e0b186; }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid #975624; outline-offset: 2px; }
+h1, h2 { margin: 0; font-size: 15px; font-weight: bold; position: absolute; top: 17px; }
+h1 { left: 20px; } h2 { left: 518px; }
+.modes { position: absolute; left: 20px; top: 47px; width: 480px; height: 42px; padding: 4px; background: #f4efe8; display: flex; gap: 4px; }
+.modes button { width: 234px; height: 34px; border: 0; background: #f4efe8; }
+button.selected { background: #e6913e; color: white; }
+#editor { position: absolute; left: 20px; top: 99px; width: 480px; height: 238px; border: 1px solid #aaa; background: white; }
+.time-group { position: absolute; left: 17px; top: 15px; }
+.time-group label { display: block; }
+.time-field { position: absolute; left: 0; top: 24px; display: flex; width: 200px; height: 27px; border: 1px solid #aaa; background: white; }
+.time-field input { width: 0; flex: 1; min-width: 0; border: 0; padding: 2px 4px; background: white; }
+.time-field button { flex: 0 0 26px; padding: 0; border: 0; border-left: 1px solid #e0b186; color: #975624; font-size: 19px; background: #fff6ec; }
+.time-field.time-only { width: 78px; }
+#repeat-days { position: absolute; left: 107px; top: 15px; }
+.days { position: absolute; top: 24px; display: flex; gap: 4px; }
+.days button { width: 48px; height: 30px; border-color: #dbcab8; }
+.quick-group { position: absolute; left: 17px; top: 81px; }
+#quick { position: absolute; display: flex; gap: 9px; top: 24px; }
+#quick button { width: 48px; height: 30px; background: #fff6ec; color: #975624; }
+.message-label { position: absolute; left: 17px; top: 156px; }
+#message { position: absolute; left: 17px; top: 180px; width: 318px; height: 25px; padding: 2px 4px; border: 1px solid #aaa; }
+.save { position: absolute; left: 356px; top: 173px; width: 108px; height: 36px; background: #e6913e; color: white; border: 0; }
+.auto-start { position: absolute; left: 20px; top: 354px; display: flex; align-items: center; gap: 5px; }
+.auto-start input { margin: 0; accent-color: #e6913e; }
+.background-hint { position: absolute; left: 263px; top: 357px; color: #706860; }
+.editor-side::after { content: ''; position: absolute; left: 506px; top: 18px; width: 1px; height: 352px; background: #e1d8cf; }
+#reminders { position: absolute; left: 518px; top: 47px; width: 210px; height: 290px; padding: 2px; border: 1px solid #aaa; font-size: 13px; background: white; overflow: auto; }
+#reminders option { padding: 3px 1px; }
+#delete { position: absolute; left: 518px; top: 348px; width: 92px; height: 30px; color: #975624; }
+dialog { max-width: 560px; border: 1px solid #e0b186; color: #413a34; background: #fffaf4; }
+dialog p { white-space: pre-wrap; overflow-wrap: anywhere; }
+dialog button { float: right; padding: 6px 22px; }
+dialog::backdrop { background: #0003; }
+#date-time-picker { width: 336px; max-height: calc(100vh - 16px); padding: 12px; border-radius: 10px; overflow: auto; }
+#date-time-picker h3 { margin: 0 0 6px; font-size: 14px; }
+#date-time-picker button { float: none; padding: 4px 10px; height: 28px; border-radius: 4px; }
+#calendar-input { display: none; }
+#calendar-host[hidden], #picker-shortcuts[hidden] { display: none; }
+#calendar-host .flatpickr-calendar { box-shadow: none; background: transparent; color: #413a34; margin: 0; }
+#calendar-host .flatpickr-days, #calendar-host .dayContainer { min-width: 308px; max-width: 308px; width: 308px; }
+#calendar-host .flatpickr-day { height: 28px; line-height: 28px; }
+#calendar-host .flatpickr-day.selected { background: #e6913e; border-color: #e6913e; }
+#calendar-host .flatpickr-day.today { border-color: #e0b186; }
+#calendar-host .flatpickr-months { height: 32px; }
+#calendar-host .flatpickr-current-month { font-size: 14px; }
+.picker-time { display: flex; align-items: center; gap: 7px; padding: 8px 0; border-top: 1px solid #e1d8cf; }
+.picker-time select { width: 65px; height: 28px; border: 1px solid #e0b186; border-radius: 4px; background: white; }
+.picker-time label { margin-right: auto; }
+.picker-actions { display: flex; gap: 6px; align-items: center; }
+#picker-shortcuts { display: flex; gap: 5px; margin-right: auto; }
+#picker-confirm { background: #e6913e; color: white; border-color: #e6913e; }
+#picker-cancel { margin-left: auto; }
+.app-info { position: absolute; left: 20px; right: 20px; top: 392px; height: 27px; border-top: 1px solid #e1d8cf; padding-top: 5px; display: flex; align-items: center; gap: 8px; color: #706860; }
+.app-info select { background: white; border: 1px solid #dbcab8; height: 23px; }
+#version { margin-left: auto; }
+#quick button { padding: 1px; line-height: 12px; }
+html[lang=en] #quick button, html[lang=ja] #quick button, html[lang=ko] #quick button { font-size: 10px; }
+html[lang=ja] #quick button { font-size: 9px; }
+html[lang=en] .background-hint, html[lang=ko] .background-hint { left: 230px; font-size: 11px; }
+html[lang=en] #delete, html[lang=ja] #delete, html[lang=ko] #delete { width: 128px; }

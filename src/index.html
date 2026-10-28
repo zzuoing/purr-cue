@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>桌面提醒</title>
+  <link rel="stylesheet" href="vendor/flatpickr.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main>
+    <section class="editor-side" aria-label="设置提醒">
+      <h1>设置提醒</h1>
+      <div class="modes" role="group" aria-label="提醒类型">
+        <button id="once" class="selected" aria-pressed="true">一次提醒</button>
+        <button id="repeat" aria-pressed="false">重复提醒</button>
+      </div>
+      <form id="editor">
+        <div class="time-group"><label for="when">提醒时间</label><div class="time-field"><input id="when" type="text" placeholder="YYYY-MM-DD HH:mm" autocomplete="off" required><button id="open-picker" type="button" aria-label="选择日期和时间" title="选择日期和时间">▦</button></div></div>
+        <div id="repeat-days" hidden><span>重复日期</span><div class="days" role="group" aria-label="重复日期"></div></div>
+        <div class="quick-group"><span>快捷状态</span><div id="quick" role="group" aria-label="快捷状态"></div></div>
+        <label class="message-label" for="message">提醒内容</label>
+        <input id="message" value="提醒今天喝水进度" maxlength="2000" required>
+        <button type="submit" class="save">保存提醒</button>
+      </form>
+      <label class="auto-start"><input id="auto-start" type="checkbox"><span data-i18n="autoStart">开机自动启动</span></label>
+      <span class="background-hint">关闭窗口后仍在托盘运行</span>
+      <footer class="app-info"><label for="language" data-i18n="language">语言</label><select id="language" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="ja">日本語</option><option value="ko">한국어</option></select><span id="version"></span></footer>
+    </section>
+    <section class="list-side" aria-label="已设置的提醒">
+      <h2>已设置的提醒</h2>
+      <select id="reminders" size="12" aria-label="已设置的提醒"></select>
+      <button id="delete">删除选中</button>
+    </section>
+    <dialog id="notice"><p id="notice-text"></p><button id="notice-ok">确定</button></dialog>
+    <dialog id="date-time-picker" aria-labelledby="picker-title">
+      <h3 id="picker-title">选择提醒时间</h3>
+      <div id="calendar-host"><input id="calendar-input" type="text" hidden aria-hidden="true"></div>
+      <div class="picker-time"><label for="picker-hour">时间</label><select id="picker-hour" aria-label="小时"></select><span>时</span><select id="picker-minute" aria-label="分钟"></select><span>分</span></div>
+      <div class="picker-actions"><div id="picker-shortcuts"><button type="button" id="picker-today">今天</button><button type="button" id="picker-tomorrow">明天</button></div><button type="button" id="picker-cancel">取消</button><button type="button" id="picker-confirm">确定</button></div>
+    </dialog>
+  </main>
+  <script src="vendor/flatpickr.min.js"></script>
+  <script src="vendor/flatpickr-zh.js"></script>
+  <script src="vendor/flatpickr-ja.js"></script>
+  <script src="vendor/flatpickr-ko.js"></script>
+  <script type="module" src="ui.js"></script>
+</body>
+</html>
