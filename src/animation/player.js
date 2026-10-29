@@ -17,7 +17,8 @@ export function drawScene(canvas, scene, frame, width, height = 250) {
     s.DrawWalkingBackground(g, width, height, frame);
     s.DrawWalkingCat(g, animalX, 135, frame * 0.48);
     s.DrawWalkingMusicNotes(g, animalX, frame);
-  } else if (scene === 'Window') s.DrawAnimatedWindowScene(g, frame);
+  } else if (scene === 'Stretch') s.DrawFluidStretchScene(g, frame);
+  else if (scene === 'Window') s.DrawAnimatedWindowScene(g, frame);
   else if (scene === 'Water') s.DrawAnimatedWaterScene(g, frame);
   else if (scene === 'Eating') s.DrawEatingScene(g, frame);
   else if (scene === 'WorkStart' || scene === 'PackUp') s.DrawOfficeScene(g, frame, scene === 'WorkStart');

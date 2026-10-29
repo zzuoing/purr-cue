@@ -49,7 +49,7 @@ export function createScenes(ClientSize) {
         let body = new SolidBrush(orange);
         let muzzle = new SolidBrush(light);
         let dark = new SolidBrush(outline);
-        let pen = new Pen(outline, 3);
+        let pen = new Pen(outline, 3.15);
         {
             pen.StartCap = LineCap.Round;
             pen.EndCap = LineCap.Round;
@@ -465,7 +465,7 @@ export function createScenes(ClientSize) {
             {
                 DrawWalkingLeg(g, pen, 52, 69 + bodyY, 49, 94);
                 DrawWalkingLeg(g, pen, 66, 70 + bodyY, 64, 94);
-                DrawWalkingLeg(g, pen, 96, 66 + bodyY, 95, 93);
+                DrawWalkingLeg(g, pen, 96, 66 + bodyY, 100, 93);
             }
             let tail = new GraphicsPath();
             {
@@ -651,7 +651,7 @@ export function createScenes(ClientSize) {
     function DrawEatingScene(g, frame)
     {
         let state = g.Save();
-        const scale = 0.90;
+        const scale = 1.00;
         g.TranslateTransform(ClientSize.Width / 2 - 165 * scale, ClientSize.Height - 4 - 158 * scale);
         g.ScaleTransform(scale, scale);
         DrawEatingAnimation(g, frame);
@@ -676,7 +676,7 @@ export function createScenes(ClientSize) {
         let muzzle = new SolidBrush(light);
         let dark = new SolidBrush(outline);
         let tongue = new SolidBrush(Color.FromArgb(225, 126, 137));
-        let pen = new Pen(outline, 3);
+        let pen = new Pen(outline, 3.5);
         {
             pen.StartCap = LineCap.Round;
             pen.EndCap = LineCap.Round;
@@ -688,11 +688,11 @@ export function createScenes(ClientSize) {
                 tail.AddBezier(86, 111, 43, 111 + tailSway, 42, 67 - tailSway, 70, 72);
                 g.DrawPath(pen, tail);
             }
-            g.FillEllipse(body, 78, 77, 104, 61);
-            g.DrawEllipse(pen, 78, 77, 104, 61);
+            g.FillEllipse(body, 81, 81, 98, 57);
+            g.DrawEllipse(pen, 81, 81, 98, 57);
             DrawWalkingLeg(g, pen, 105, 126, 100, 148);
             DrawWalkingLeg(g, pen, 117, 128, 116, 149);
-            DrawWalkingLeg(g, pen, 137, 128, 140, 148);
+            DrawWalkingLeg(g, pen, 163, 125, 167, 148);
 
             g.FillEllipse(body, headX, headY, 56, 54);
             g.DrawEllipse(pen, headX, headY, 56, 54);
@@ -999,7 +999,7 @@ export function createScenes(ClientSize) {
             if (sipping) g.DrawEllipse(pen, x + 110 + headSway, y + 36 + headBob, 5, 3);
             DrawWalkingLeg(g, pen, x + 54, y + 66, x + 51, y + 89);
             DrawWalkingLeg(g, pen, x + 68, y + 68, x + 66, y + 89);
-            DrawWalkingLeg(g, pen, x + 98, y + 64, x + 95, y + 88);
+            DrawWalkingLeg(g, pen, x + 98, y + 64, x + 102, y + 88);
         }
     }
 
