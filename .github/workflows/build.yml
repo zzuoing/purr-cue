@@ -113,5 +113,13 @@ jobs:
             if [[ "$RELEASE_TAG" == *-* ]]; then
               flags+=(--prerelease)
             fi
-            gh release create "$RELEASE_TAG" "${packages[@]}" --verify-tag --generate-notes --notes-file docs/release-install-notes.md "${flags[@]}"
+            notes="docs/releases/$RELEASE_TAG.md"
+            if [[ -f "$notes" ]]; then
+              cat "$notes" > release-notes.md
+              printf '\n---\n\n' >> release-notes.md
+              cat docs/release-install-notes.md >> release-notes.md
+            else
+              cp docs/release-install-notes.md release-notes.md
+            fi
+            gh release create "$RELEASE_TAG" "${packages[@]}" --verify-tag --generate-notes --notes-file release-notes.md "${flags[@]}"
           fi
